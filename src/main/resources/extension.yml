@@ -4,4 +4,3 @@ main: org.geysermc.extension.capefix.MojangCapeFix
 api: 2.9.0
 version: 1.0.0
 authors: [Random]
-description: Fixes blue cape texture bug for Mojang/Minecon capes on Bedrock clients
