@@ -1,6 +1,7 @@
-id: $id
-name: $name
-main: org.geyser.extension.exampleid.ExampleExtension
-api: $api
-version: $version
-authors: [$author]
+id: mojangcapefix
+name: MojangCapeFix
+main: org.geysermc.extension.capefix.MojangCapeFix
+api: 2.9.0
+version: 1.0.0
+authors: [Random]
+description: Fixes blue cape texture bug for Mojang/Minecon capes on Bedrock clients
