@@ -2,19 +2,35 @@ package org.geysermc.extension.capefix;
 
 import org.geysermc.event.subscribe.Subscribe;
 import org.geysermc.geyser.api.extension.Extension;
-import org.geysermc.geyser.api.event.lifecycle.GeyserPreInitializeEvent;
+import org.geysermc.geyser.api.event.bedrock.SessionSkinApplyEvent;
+import org.geysermc.geyser.api.skin.Cape;
 
 public class MojangCapeFix implements Extension {
     
     @Subscribe
-    public void onPreInitialize(GeyserPreInitializeEvent event) {
-        this.logger().info("=========================================");
-        this.logger().info("  MojangCapeFix Extension Starting...");
-        this.logger().info("  Fixing blue cape texture bug!");
-        this.logger().info("=========================================");
+    public void onSkinApply(SessionSkinApplyEvent event) {
+        if (event.bedrock()) {
+            return; // Only process Java players
+        }
         
-        this.eventBus().subscribe(this, new CapeFixListener(this));
+        Cape currentCape = event.skinData().cape();
         
-        this.logger().info("MojangCapeFix loaded successfully!");
+        if (currentCape == null || currentCape.failed()) {
+            return;
+        }
+        
+        try {
+            this.logger().info("Fixing cape for: " + event.username());
+            
+            Cape fixedCape = CapeFixListener.fixCape(currentCape, this);
+            
+            if (fixedCape != null && fixedCape != currentCape) {
+                event.cape(fixedCape);
+                this.logger().info("✓ Cape fixed for: " + event.username());
+            }
+            
+        } catch (Exception e) {
+            this.logger().error("Failed to fix cape for " + event.username(), e);
+        }
     }
 }
