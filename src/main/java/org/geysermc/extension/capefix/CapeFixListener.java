@@ -1,10 +1,7 @@
 package org.geysermc.extension.capefix;
 
-import org.geysermc.event.subscribe.Subscribe;
-import org.geysermc.geyser.api.connection.GeyserConnection;
-import org.geysermc.geyser.api.event.bedrock.SessionSkinApplyEvent;
 import org.geysermc.geyser.api.extension.Extension;
-import org.geysermc.geyser.skin.SkinProvider;
+import org.geysermc.geyser.api.skin.Cape;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -13,53 +10,41 @@ import java.io.IOException;
 
 public class CapeFixListener {
     
-    private final Extension extension;
-    
-    public CapeFixListener(Extension extension) {
-        this.extension = extension;
-    }
-    
-    @Subscribe
-    public void onSkinApply(SessionSkinApplyEvent event) {
-        GeyserConnection connection = event.connection();
-        
-        SkinProvider.Cape cape = event.cape();
-        
-        if (cape == null) {
-            return;
+    public static Cape fixCape(Cape currentCape, Extension extension) {
+        if (currentCape == null || currentCape.failed()) {
+            return currentCape;
         }
         
         try {
-            extension.logger().info("Fixing cape for: " + connection.javaUsername());
+            byte[] capeData = currentCape.data();
             
-            byte[] capeData = cape.capeData();
+            if (capeData == null || capeData.length == 0) {
+                return currentCape;
+            }
+            
             BufferedImage originalCape = bytesToImage(capeData);
             
             if (originalCape == null) {
-                return;
+                return currentCape;
             }
             
             BufferedImage fixedCape = fixCapeTexture(originalCape);
             byte[] fixedCapeData = imageToBytes(fixedCape);
             
-            SkinProvider.Cape fixedCapeObject = new SkinProvider.Cape(
-                cape.textureUrl(),
-                cape.capeId(),
+            return new Cape(
+                currentCape.textureUrl(),
+                currentCape.capeId(),
                 fixedCapeData,
-                System.currentTimeMillis(),
                 false
             );
             
-            event.cape(fixedCapeObject);
-            
-            extension.logger().info("✓ Cape fixed for: " + connection.javaUsername());
-            
         } catch (Exception e) {
             extension.logger().error("Failed to fix cape", e);
+            return currentCape;
         }
     }
     
-    private BufferedImage bytesToImage(byte[] imageData) {
+    private static BufferedImage bytesToImage(byte[] imageData) {
         try {
             return ImageIO.read(new java.io.ByteArrayInputStream(imageData));
         } catch (IOException e) {
@@ -67,7 +52,7 @@ public class CapeFixListener {
         }
     }
     
-    private BufferedImage fixCapeTexture(BufferedImage original) {
+    private static BufferedImage fixCapeTexture(BufferedImage original) {
         int width = original.getWidth();
         int height = original.getHeight();
         
@@ -94,7 +79,7 @@ public class CapeFixListener {
         return fixed;
     }
     
-    private byte[] imageToBytes(BufferedImage image) throws IOException {
+    private static byte[] imageToBytes(BufferedImage image) throws IOException {
         ByteArrayOutputStream baos = new ByteArrayOutputStream();
         ImageIO.write(image, "PNG", baos);
         return baos.toByteArray();
