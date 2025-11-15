@@ -4,6 +4,7 @@ import org.geysermc.event.subscribe.Subscribe;
 import org.geysermc.geyser.api.connection.GeyserConnection;
 import org.geysermc.geyser.api.event.bedrock.SessionSkinApplyEvent;
 import org.geysermc.geyser.api.extension.Extension;
+import org.geysermc.geyser.skin.SkinProvider;
 
 import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
@@ -22,15 +23,16 @@ public class CapeFixListener {
     public void onSkinApply(SessionSkinApplyEvent event) {
         GeyserConnection connection = event.connection();
         
-        byte[] capeData = event.cape();
+        SkinProvider.Cape cape = event.cape();
         
-        if (capeData == null || capeData.length == 0) {
+        if (cape == null) {
             return;
         }
         
         try {
             extension.logger().info("Fixing cape for: " + connection.javaUsername());
             
+            byte[] capeData = cape.capeData();
             BufferedImage originalCape = bytesToImage(capeData);
             
             if (originalCape == null) {
@@ -40,7 +42,15 @@ public class CapeFixListener {
             BufferedImage fixedCape = fixCapeTexture(originalCape);
             byte[] fixedCapeData = imageToBytes(fixedCape);
             
-            event.cape(fixedCapeData);
+            SkinProvider.Cape fixedCapeObject = new SkinProvider.Cape(
+                cape.textureUrl(),
+                cape.capeId(),
+                fixedCapeData,
+                System.currentTimeMillis(),
+                false
+            );
+            
+            event.cape(fixedCapeObject);
             
             extension.logger().info("✓ Cape fixed for: " + connection.javaUsername());
             
