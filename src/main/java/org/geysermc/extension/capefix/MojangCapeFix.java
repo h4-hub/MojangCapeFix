@@ -42,7 +42,7 @@ public class MojangCapeFix implements Extension {
                 event.cape(fixedCape);
                 this.logger().info("✓ Cape fixed and applied for: " + event.username());
             } else {
-                this.logger().warn("Cape fix returned same cape object");
+                this.logger().info("Cape fix returned same cape object");
             }
             
         } catch (Exception e) {
