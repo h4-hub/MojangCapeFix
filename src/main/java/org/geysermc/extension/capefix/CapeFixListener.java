@@ -7,6 +7,7 @@ import javax.imageio.ImageIO;
 import java.awt.image.BufferedImage;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.net.URL;
 
 public class CapeFixListener {
     
@@ -15,14 +16,14 @@ public class CapeFixListener {
             return currentCape;
         }
         
+        String textureUrl = currentCape.textureUrl();
+        
+        if (textureUrl == null || textureUrl.isEmpty()) {
+            return currentCape;
+        }
+        
         try {
-            byte[] capeData = currentCape.data();
-            
-            if (capeData == null || capeData.length == 0) {
-                return currentCape;
-            }
-            
-            BufferedImage originalCape = bytesToImage(capeData);
+            BufferedImage originalCape = ImageIO.read(new URL(textureUrl));
             
             if (originalCape == null) {
                 return currentCape;
@@ -32,23 +33,15 @@ public class CapeFixListener {
             byte[] fixedCapeData = imageToBytes(fixedCape);
             
             return new Cape(
-                currentCape.textureUrl(),
+                textureUrl,
                 currentCape.capeId(),
                 fixedCapeData,
                 false
             );
             
         } catch (Exception e) {
-            extension.logger().error("Failed to fix cape", e);
+            extension.logger().error("Failed to fix cape for texture: " + textureUrl, e);
             return currentCape;
-        }
-    }
-    
-    private static BufferedImage bytesToImage(byte[] imageData) {
-        try {
-            return ImageIO.read(new java.io.ByteArrayInputStream(imageData));
-        } catch (IOException e) {
-            return null;
         }
     }
     
