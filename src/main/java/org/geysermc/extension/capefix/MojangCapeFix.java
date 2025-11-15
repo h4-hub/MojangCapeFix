@@ -6,8 +6,6 @@ import org.geysermc.geyser.api.event.lifecycle.GeyserPreInitializeEvent;
 
 public class MojangCapeFix implements Extension {
     
-    private CapeFixListener capeFixListener;
-    
     @Subscribe
     public void onPreInitialize(GeyserPreInitializeEvent event) {
         this.logger().info("=========================================");
@@ -15,8 +13,7 @@ public class MojangCapeFix implements Extension {
         this.logger().info("  Fixing blue cape texture bug!");
         this.logger().info("=========================================");
         
-        capeFixListener = new CapeFixListener(this);
-        this.eventBus().subscribe(this, capeFixListener);
+        this.eventBus().subscribe(this, new CapeFixListener(this));
         
         this.logger().info("MojangCapeFix loaded successfully!");
     }
